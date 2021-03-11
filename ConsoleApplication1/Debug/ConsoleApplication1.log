@@ -1,0 +1,6 @@
+﻿  ConsoleApplication1.cpp
+D:\Desktop\project1\ConsoleApplication1\edgeServer.h(67,35): warning C4018: “<”: 有符号/无符号不匹配
+  globalValue.cpp
+D:\Desktop\project1\ConsoleApplication1\edgeServer.h(67,35): warning C4018: “<”: 有符号/无符号不匹配
+  正在生成代码...
+  ConsoleApplication1.vcxproj -> D:\Desktop\project1\ConsoleApplication1\Debug\ConsoleApplication1.exe
