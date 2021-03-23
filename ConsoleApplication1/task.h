@@ -14,7 +14,7 @@ class Task {
 	public:
 		//构造函数
 		Task(int taskResource, int dataSize,int taskPriority,int taskState): taskResource(taskResource), dataSIze(dataSize),taskPriority(taskPriority),taskState(taskState) {
-			cout << "已创建一个任务，数据大小为：" << dataSIze << "任务优先级为：" << taskPriority << endl;
+			//cout << "已创建一个任务，数据大小为：" << dataSIze << "任务优先级为：" << taskPriority << endl;
 			//设置当前任务的生成时间
 			setTimeGenerate();
 		}
@@ -24,6 +24,16 @@ class Task {
 		}
 
 		/*************************************************************************************/
+
+		//设置该任务的数据源头设备编号
+		void setTaskResource(int _taskResource) {
+			taskResource = _taskResource;
+		}
+		//返回该任务的数据源头设备编号
+		int getTaskResource() {
+			return taskResource;
+		}
+
 		//设置该任务的决策变量值
 		void setTaskState(int taskstate) {
 			taskState = taskstate;

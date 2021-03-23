@@ -24,7 +24,7 @@ class MobilePhone {
 
 			//初始化移动设备电量为5000J
 			energyLeft = 5000;
-			
+
 			//建立任务生成线程
 			thread threadGenerate(&MobilePhone::taskGenerate,this);
 			threadGenerate.detach();
@@ -39,16 +39,16 @@ class MobilePhone {
 
 		//固定时间内生成任务并送入任务池	默认全部发送至服务器
 		void taskGenerate() {
-			cout << "编号" << number << "用户开始生成任务" << endl;
+			//cout << "编号" << number << "用户开始生成任务" << endl;
 			while (true) {
-				std::chrono::milliseconds dura(500);		//间隔为1秒
+				std::chrono::milliseconds dura(200);		//间隔为1秒
 				std::this_thread::sleep_for(dura);
 
 				//互斥访问任务池
 				unique_lock<mutex> bufferLock(mutexBufferTasks);
 				bufferOfTasks.push(Task(number, 200, 5, 1));	//	生成一个任务对象 200bits P5
 				bufferLock.unlock();
-				cout << "任务送入任务池" << endl;
+				//cout << "任务送入任务池" << endl;
 			}
 		}
 
@@ -67,7 +67,7 @@ class MobilePhone {
 						//唤醒等待线程
 						queueTranEmpty.notify_all();
 
-						cout << "任务送入发送队列" << endl;
+						//cout << "任务送入发送队列" << endl;
 
 						//互斥 将当前任务从任务池中移除
 						unique_lock<mutex> bufferLock(mutexBufferTasks);
@@ -105,7 +105,7 @@ class MobilePhone {
 			//queueTranLock.unlock();
 			mutexQueueTran.unlock();
 			
-			cout << "任务离开移动终端" << endl;
+			//cout << "任务离开移动终端" << endl;
 			return temp;
 		}
 
@@ -161,14 +161,6 @@ class MobilePhone {
 		
 		/*************************************************************************************************/
 
-		void test(Task& task) {
-			for (int i = 0;i < 300;i++) {
-				queueTran.push(std::ref(task));
-				queueTranEmpty.notify_all();
-				Sleep(200);
-			}
-		}
-
 	private:
 		//用户编号
 		int number;
@@ -178,6 +170,9 @@ class MobilePhone {
 		int energyLeft;
 		//移动终端的移动速度
 		int movingVelocity;
+
+		//用户的坐标
+		pair<double, double> cooerdinate;
 
 
 		//移动终端的发送队列

@@ -71,7 +71,7 @@ class Channel {
 					}
 				}
 
-				cout << "任务送入信道" << endl;
+				//cout << "任务送入信道" << endl;
 				
 
 				/*
@@ -99,9 +99,15 @@ class Channel {
 			while (true) {
 
 				unique_lock<mutex> channelLock(mutexQueueChannelTran);
-				while (queueChannelTran.empty()) {
+				queueEmpty.wait(channelLock, [this] {
+					if (!queueChannelTran.empty()) {
+						return true;
+					}
+					else return false;
+				});
+				/*while (queueChannelTran.empty()) {
 					queueEmpty.wait(channelLock);
-				}
+				}*/
 
 				//取出队列头部任务函数
 				Task temp = std::ref(queueChannelTran.front());
@@ -116,7 +122,7 @@ class Channel {
 				pointerToTarget->taskReceive(temp);
 				mutexPointerTarget.unlock();
 
-				cout << "任务离开信道" << endl;
+				//cout << "任务离开信道" << endl;
 
 			}//end while
 		}
@@ -124,7 +130,7 @@ class Channel {
 		/***************************************************************************************************************/
 
 		//设置该信道的传输时延
-		void setDelay(del) {
+		void setDelay(int del) {
 			delay = del;
 		}
 		//获取该信道的传输时延
@@ -133,7 +139,7 @@ class Channel {
 		}
 
 		//设置信道的带宽
-		void setBandWidth(band) {
+		void setBandWidth(int band) {
 			bandWidth = band;
 		}
 		//获取信道的带宽

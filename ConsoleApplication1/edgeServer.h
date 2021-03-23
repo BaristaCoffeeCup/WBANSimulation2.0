@@ -20,9 +20,17 @@ class EdgeServer {
 			//调用初始化函数
 			initEdgeServer();
 			//开启线程
-			/*thread taskAllocateThread(&EdgeServer::taskAllocate, this);
-			taskAllocateThread.detach();*/
-			
+			thread taskAllocateThread(&EdgeServer::taskAllocate, this);
+			taskAllocateThread.detach();
+			thread taskProcessThread0(&EdgeServer::taskProcess, this, 0);
+			taskProcessThread0.detach();
+			thread taskProcessThread1(&EdgeServer::taskProcess, this, 1);
+			taskProcessThread1.detach();
+			thread taskProcessThread2(&EdgeServer::taskProcess, this, 2);
+			taskProcessThread2.detach();
+			thread taskProcessThread3(&EdgeServer::taskProcess, this, 3);
+			taskProcessThread3.detach();
+
 		}
 
 		//析构函数
@@ -43,6 +51,7 @@ class EdgeServer {
 		
 		//缓冲队列分配函数  根据当前四个服务队列的负载情况，选择最短的服务队列
 		void taskAllocate() {
+			
 			while (true) {
 				//互斥访问
 				unique_lock<mutex> queueReceiveLock(queueReceiveMutex);
@@ -57,9 +66,9 @@ class EdgeServer {
 				queueReceive.pop();
 				queueReceiveLock.unlock();
 
-				//判断当前负载最小的服务队列
 				int minLoadQueue = -1;
 				int minLoad = MAXINT;
+				//判断当前负载最小的服务队列
 				for (unsigned int i = 0; i < serverQueueSet.size();i++) {
 					//筛选负载最小的队列
 					if (serverQueueSet[i].size() < minLoad) {
@@ -67,6 +76,8 @@ class EdgeServer {
 						minLoad = serverQueueSet[i].size();  
 					}
 				}
+
+				//cout << "选择处理队列为：" << minLoadQueue << endl;
 
 				//放入选定队列 互斥访问对应服务队列
 				serverQueueSetMutex.lock();
@@ -77,16 +88,20 @@ class EdgeServer {
 				switch (minLoadQueue)
 				{
 				case 0:
-					processQueueEmpty0.notify_one();
+					processQueueEmpty0.notify_all();
+					//cout << "任务送入0号处理队列" << endl;
 					break;
 				case 1:
-					processQueueEmpty1.notify_one();
+					processQueueEmpty1.notify_all();
+					//cout << "任务送入1号处理队列" << endl;
 					break;
 				case 2:
-					processQueueEmpty2.notify_one();
+					processQueueEmpty2.notify_all();
+					//cout << "任务送入2号处理队列" << endl;
 					break;
 				case 3:
-					processQueueEmpty3.notify_one();
+					processQueueEmpty3.notify_all();
+					//cout << "任务送入3号处理队列" << endl;
 					break;
 				default:
 					break;
@@ -101,12 +116,18 @@ class EdgeServer {
 			queueReceiveMutex.lock();
 			queueReceive.push(task);
 			queueReceiveMutex.unlock();
-			cout << "任务送入服务器" <<queueReceive.size()<< endl;
+
+			receiveQueueEmpty.notify_one();
+			//cout << "任务送入服务器" <<task.getTaskResource()<< endl;
+			
 		}
 
-		//服务器的四个四个处理器单独工作，根据
+		//服务器的四个四个处理器单独工作
 		void taskProcess(int numberOfCPU) {
-			condition_variable* contionalNow;
+			
+			int curLength = serverQueueSet[numberOfCPU].size();
+
+			condition_variable* contionalNow = NULL;
 			switch (numberOfCPU)
 			{
 			case 0:
@@ -124,6 +145,8 @@ class EdgeServer {
 			default:
 				break;
 			}//end switch
+			cout << "处理队列开始工作：" << numberOfCPU << endl;
+
 			
 			while (true) {
 				//互斥访问服务器的处理队列
@@ -135,21 +158,17 @@ class EdgeServer {
 					else return false;
 				});
 
-				//取出处理队列的队首
-				Task temp = std::ref(serverQueueSet[numberOfCPU].front());
-				serverQueueSet[numberOfCPU].pop();
-
-				//计算处理该任务需要的处理时延，并对该任务的处理时延进行赋值
-				/*
+				//线程暂停 模拟传输时延
+				std::chrono::milliseconds dura(100);
+				std::this_thread::sleep_for(dura);
+				  
+				//cout << "服务器处理队列" << numberOfCPU << "处理了一个任务" << endl;
 				
-				处理部分暂时还没有确定
-
-				*/
-				
-
 			}//end while
 		}
 
+
+		/*************************************************************************************************/
 
 		//设置服务器的编号
 		void setNumber(int num) {
@@ -161,14 +180,13 @@ class EdgeServer {
 		}
 
 
-		
-
 	private:
 		//服务器编号
 		int number;
 		//服务器服务半径
 		int serverRadius;
-
+		//服务器的坐标
+		pair<double, double> coordinate;
 
 		//服务器接收任务的缓冲队列
 		queue<Task> queueReceive;
