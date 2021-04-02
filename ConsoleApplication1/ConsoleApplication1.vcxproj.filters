@@ -38,5 +38,14 @@
     <ClInclude Include="globalValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="concurrentqueue-master\blockingconcurrentqueue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="concurrentqueue-master\concurrentqueue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="concurrentqueue-master\lightweightsemaphore.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

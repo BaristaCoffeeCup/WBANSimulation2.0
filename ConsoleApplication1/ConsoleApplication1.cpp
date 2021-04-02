@@ -14,16 +14,20 @@ using namespace std;
 int main()
 {
 
-	MobilePhone m1(250, 5, 5);
-	MobilePhone m2(351,4,4);
-	EdgeServer server1(241);
+	MobilePhone m1(250, 5, 5, 1);
+	//MobilePhone m2(351,4,4);
+	//EdgeServer server1(241);
 
-	EdgeGlobalManager manager1;
-	manager1.setPointerToEdge(std::ref(server1));
+	//EdgeGlobalManager manager1;
+	//manager1.setPointerToEdge(std::ref(server1));
 
-	Channel<EdgeServer, MobilePhone> c1(std::ref(server1), std::ref(m1));
-	Channel<EdgeServer, MobilePhone> c2(std::ref(server1), std::ref(m2));
+	//Channel<EdgeServer, MobilePhone> c1(std::ref(server1), std::ref(m1));
+	//Channel<EdgeServer, MobilePhone> c2(std::ref(server1), std::ref(m2));
+	//std::cout << "tid=" << std::this_thread::get_id() << std::endl;
 	//manager1.buildChannel<MobilePhone>(std::ref(m2));
+	//manager1.buildChannelBetweenServerAndMobile(std::ref(server1), std::ref(m2));
+	//manager1.buildChannel<MobilePhone>(std::ref(m1));
+	//manager1.buildChannelBetweenServerAndMobile(std::ref(server1), std::ref(m1));
 
 
 

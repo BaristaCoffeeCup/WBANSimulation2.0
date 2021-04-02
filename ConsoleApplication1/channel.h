@@ -63,31 +63,14 @@ class Channel {
 				if (pointerToResource->getQueueTranState() == true) continue;
 				else if (pointerToResource->getQueueTranState() == false) {
 					//互斥访问信道队列
-					unique_lock<mutex> channelLock1(mutexQueueChannelTran, defer_lock);
+					unique_lock<mutex> channelLock1(mutexQueueChannelTran);
 					if (pointerToResource->getQueueTranState() == false) {
 						//调用任务来源对象的成员函数
 						queueChannelTran.push(pointerToResource->taskTransport());
 						queueEmpty.notify_one();
 					}
 				}
-
 				//cout << "任务送入信道" << endl;
-				
-
-				/*
-				//互斥访问信道队列
-				unique_lock<mutex> channelLock(mutexQueueChannelTran);
-				//当数据来源的发送信道为空，暂停任务输入线程
-				while (pointerToResource->getQueueTranState()) {
-					queueEmpty.wait(channelLock);
-				}
-
-				//调用任务来源对象的成员函数
-				queueChannelTran.push(pointerToResource->taskTransport());
-				queueEmpty.notify_one();
-				
-				cout << "任务送入信道" << endl;*/
-
 			}//end while
 
 			
@@ -97,21 +80,20 @@ class Channel {
 		void outTask() {
 
 			while (true) {
-
 				unique_lock<mutex> channelLock(mutexQueueChannelTran);
 				queueEmpty.wait(channelLock, [this] {
 					if (!queueChannelTran.empty()) {
 						return true;
 					}
-					else return false;
+					else {
+						return false;
+					}
 				});
-				/*while (queueChannelTran.empty()) {
-					queueEmpty.wait(channelLock);
-				}*/
-
+				
 				//取出队列头部任务函数
 				Task temp = std::ref(queueChannelTran.front());
 				queueChannelTran.pop();
+				channelLock.unlock();
 
 				//线程暂停 模拟传输时延
 				std::chrono::milliseconds dura(delay);
@@ -122,10 +104,9 @@ class Channel {
 				pointerToTarget->taskReceive(temp);
 				mutexPointerTarget.unlock();
 
-				//cout << "任务离开信道" << endl;
-
 			}//end while
 		}
+
 
 		/***************************************************************************************************************/
 

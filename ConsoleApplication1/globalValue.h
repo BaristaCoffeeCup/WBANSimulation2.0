@@ -37,7 +37,12 @@ class EdgeGlobalManager {
 		//信道建立并绑定通信双方
 		template <typename T>
 		void buildChannel(T &user) {
-			Channel<EdgeServer,T> channelTemp(*pointerToEdge, user);
+			std::cout << "tid=" << std::this_thread::get_id() << std::endl;
+			Channel<EdgeServer,T>* channelTemp = new Channel<EdgeServer,T>(*pointerToEdge, std::ref(user));
+		}
+
+		void buildChannelBetweenServerAndMobile(EdgeServer& server, MobilePhone& user) {
+			Channel<EdgeServer, MobilePhone>* channelNew = new Channel<EdgeServer,MobilePhone>(std::ref(server), std::ref(user));
 		}
 
 

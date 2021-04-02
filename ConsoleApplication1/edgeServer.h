@@ -118,7 +118,7 @@ class EdgeServer {
 			queueReceiveMutex.unlock();
 
 			receiveQueueEmpty.notify_one();
-			//cout << "任务送入服务器" <<task.getTaskResource()<< endl;
+			cout << "任务送入服务器" <<task.getTaskResource()<< endl;
 			
 		}
 
@@ -162,7 +162,7 @@ class EdgeServer {
 				std::chrono::milliseconds dura(100);
 				std::this_thread::sleep_for(dura);
 				  
-				//cout << "服务器处理队列" << numberOfCPU << "处理了一个任务" << endl;
+				
 				
 			}//end while
 		}

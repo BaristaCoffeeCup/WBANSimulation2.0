@@ -144,6 +144,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="channel.h" />
+    <ClInclude Include="concurrentqueue-master\blockingconcurrentqueue.h" />
+    <ClInclude Include="concurrentqueue-master\concurrentqueue.h" />
+    <ClInclude Include="concurrentqueue-master\lightweightsemaphore.h" />
     <ClInclude Include="edgeServer.h" />
     <ClInclude Include="globalValue.h" />
     <ClInclude Include="mobilePhone.h" />

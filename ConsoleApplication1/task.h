@@ -13,7 +13,7 @@ using namespace std;
 class Task {
 	public:
 		//构造函数
-		Task(int taskResource, int dataSize,int taskPriority,int taskState): taskResource(taskResource), dataSIze(dataSize),taskPriority(taskPriority),taskState(taskState) {
+		Task(int taskResource, int dataSize,int taskPriority,int taskState,int taskKind): taskResource(taskResource), dataSIze(dataSize),taskPriority(taskPriority),taskState(taskState), taskKind(taskKind){
 			//cout << "已创建一个任务，数据大小为：" << dataSIze << "任务优先级为：" << taskPriority << endl;
 			//设置当前任务的生成时间
 			setTimeGenerate();
@@ -85,11 +85,12 @@ class Task {
 
 	private:
 
-		int taskResource;		//	创造该任务的用户编号
-		int taskKind;				//任务类型 3
-		int dataSIze;		//任务数据量 2
-		int taskPriority;	//任务优先级 1
-		int taskState;	//任务的决策，本地执行或发送至云端
+		int taskResource;			//	创造该任务的用户编号
+		int taskKind;					//任务类型 3
+		int dataSIze;					//任务数据量 2
+		int taskPriority;			//任务优先级 1
+		int taskState;				//任务的决策，本地执行或发送至云端
+		int calculateDensity;	//任务的计算密度
 
 		//任务生成时间点
 		DWORD timeGenerate;

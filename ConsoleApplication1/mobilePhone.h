@@ -18,18 +18,20 @@ class MobilePhone {
 
 	public:
 		//构造函数
-		MobilePhone(int number,int priority,int velocity) :number(number),priority(priority),movingVelocity(velocity) {
+		MobilePhone(int number,int priority,int velocity,int patterns) :number(number),priority(priority),movingVelocity(velocity),userBehaviorPatterns(patterns) {
 			
 			printf("创建移动终端用户：编号为%d，移动速度为%d，优先级为%d\n", number, movingVelocity, priority);
 
 			//初始化移动设备电量为5000J
 			energyLeft = 5000;
 
-			//建立任务生成线程
+			////建立任务生成线程
 			thread threadGenerate(&MobilePhone::taskGenerate,this);
 			threadGenerate.detach();
-			thread threadAllocate(&MobilePhone::taskAllocate, this);
-			threadAllocate.detach();
+			//thread threadAllocate(&MobilePhone::taskAllocate, this);
+			//threadAllocate.detach();
+			/*thread threadMoving(&MobilePhone::moveUser, this);
+			threadMoving.detach();*/
 		}
 
 		//析构函数 
@@ -39,16 +41,53 @@ class MobilePhone {
 
 		//固定时间内生成任务并送入任务池	默认全部发送至服务器
 		void taskGenerate() {
-			//cout << "编号" << number << "用户开始生成任务" << endl;
+			//获取用户行为模型
+			vector<int> pattern = userBehaviorPatternsSet[userBehaviorPatterns];
+
+			int kindNow = pattern[0];			//当前时间段用户主要生成的任务
+			int index = 0;
+			int timeCount = 0;		//累计随机插入任务的时间
+			int timeNow = 0;			//累计程序整体执行时间
+			srand((unsigned)time(NULL));
+			int randomTaskKind = rand() % 4;
+			int randomTime = rand() % 5 + 10;
+
+
 			while (true) {
-				std::chrono::milliseconds dura(200);		//间隔为1秒
+				//间隔为1秒
+				std::chrono::milliseconds dura(100);		
 				std::this_thread::sleep_for(dura);
+
+				if (timeCount == randomTime) {
+					//随机产生一个任务类型
+					randomTaskKind = rand() % 4;
+					//互斥访问任务池
+					unique_lock<mutex> bufferLock(mutexBufferTasks);
+					bufferOfTasks.push(Task(number, 200, 5, 1, randomTaskKind));	//	生成一个任务对象 200bits P5
+					bufferLock.unlock();
+					cout << endl << "生成任务类型为：" << randomTaskKind << endl << endl;
+					//累计时间重置
+					timeCount = 0;
+					//如果当前时间已经经过了之前一次随即出来的时延，就随机产生一次别的任务
+					randomTime = rand() % 5 + 10;
+					continue;
+				}
 
 				//互斥访问任务池
 				unique_lock<mutex> bufferLock(mutexBufferTasks);
-				bufferOfTasks.push(Task(number, 200, 5, 1));	//	生成一个任务对象 200bits P5
+				bufferOfTasks.push(Task(number, 200, 5, 1,kindNow));	//	生成一个任务对象 200bits P5
+				cout << "生成任务类型为：" << kindNow << endl;
 				bufferLock.unlock();
-				//cout << "任务送入任务池" << endl;
+				
+				if (timeNow == 300) break;
+				//每一分钟切换一次任务
+				else if (timeNow % 60 == 0 && timeNow < 300 && timeNow > 0) {
+					index = (index + 1) % 4;
+					kindNow = pattern[index];
+				}
+
+				timeNow++;
+				timeCount++;
 			}
 		}
 
@@ -133,7 +172,27 @@ class MobilePhone {
 
 		//用户移动函数，根据不同的速度和移动模式，实现用户的实时移动
 		void moveUser() {
-			//简单的直线运动
+			//采用随机游走模型
+			while (true) {
+				srand((unsigned)time(NULL));//初始化随机数
+				//选定一个速度，选取范围是1 - 5 m/s
+				movingVelocity = rand() % 5 +1;
+				//选取一个方向，选取方向是0 - 2Π
+				movinDirection = (rand() % (180+1)) - 90 + 1;
+				//没延迟100毫秒秒，更新一个用户的坐标
+				for (int i = 0;i < 100;i++) {
+					std::chrono::milliseconds dura(100);	//每10秒用户重新选择速度和方向
+					std::this_thread::sleep_for(dura);
+					//更新当前用户的坐标
+					coordinate.first += (double)(0.1 * movingVelocity * sin(movinDirection) );
+					coordinate.second += (double)(0.1 * movingVelocity * cos(movinDirection) );
+					cout << coordinate.first << "   "<<coordinate.second << endl;
+				}
+				
+				//移动10秒停止1秒
+				std::chrono::milliseconds dura1(1000);	
+				std::this_thread::sleep_for(dura1);
+			}
 
 		}
 
@@ -170,9 +229,25 @@ class MobilePhone {
 		int energyLeft;
 		//移动终端的移动速度
 		int movingVelocity;
+		//移动终端的移动方向
+		int movinDirection;
+		//当前终端的带宽
+		int bandWidth;
+		//当前终端的发射功率
+		int transmitPower;
 
 		//用户的坐标
-		pair<double, double> cooerdinate;
+		pair<double, double> coordinate;
+
+		//用户行为模式
+		int userBehaviorPatterns;
+		vector<vector<int>> userBehaviorPatternsSet = {
+			{0,1,2,3},
+			{1,0,2,3},
+			{2,0,1,3},
+			{3,2,0,1},
+			{3,1,2,0}
+		};
 
 
 		//移动终端的发送队列
@@ -182,8 +257,6 @@ class MobilePhone {
 		//移动终端的接受队列
 		queue<Task> queueReceive;
 
-		//移动设备的坐标
-		std::pair<int, int> coordinate;
 		//本地任务池
 		queue<Task> bufferOfTasks; 
 
